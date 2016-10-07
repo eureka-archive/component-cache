@@ -17,7 +17,6 @@ require_once __DIR__.'/../src/Cache/CacheWrapperFile.php';
  * Class Test for cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
 class CacheTest extends \PHPUnit_Framework_TestCase
 {
