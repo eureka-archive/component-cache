@@ -13,22 +13,16 @@ namespace Eureka\Component\Cache;
  * Class Cache Wrapper for php file cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
 class CacheWrapperFile extends CacheWrapperAbstract
 {
-
     /**
-     * List of Cache keys/files
-     *
-     * @var array $cache
+     * @var array $cache List of Cache keys/files
      */
     protected $cache = array();
 
     /**
-     * Directory where are Cache files.
-     *
-     * @var string $directory
+     * @var string $directory Directory where are Cache files.
      */
     protected $directory = '/tmp/Eureka/cache/';
 
@@ -40,7 +34,7 @@ class CacheWrapperFile extends CacheWrapperAbstract
     public function clear()
     {
         if (empty($this->cache)) {
-            $file = $this->directory.'Cache.dat';
+            $file = $this->directory . 'Cache.dat';
 
             //~ Retrieve Cache information.
             if (file_exists($file)) {
@@ -69,7 +63,7 @@ class CacheWrapperFile extends CacheWrapperAbstract
     protected function clearExpired()
     {
         if (empty($this->cache)) {
-            $file = $this->directory.'Cache.dat';
+            $file = $this->directory . 'Cache.dat';
 
             //~ Retrieve Cache information.
             if (file_exists($file)) {
@@ -100,22 +94,13 @@ class CacheWrapperFile extends CacheWrapperAbstract
      */
     public function get($key)
     {
-        // Check if enabled
-        if (!$this->isEnabled()) {
+        if (!$this->has($key)) {
             return null;
         }
 
-        // Clear expired Cache files
-        $this->clearExpired();
+        $file = $this->directory . substr(md5($this->prefix() . $key), 0, 10) . '.dat';
 
-        $pKey = $this->prefix().$key;
-        if (isset($this->cache[$pKey])) {
-            $file = $this->directory.substr(md5($pKey), 0, 10).'.dat';
-
-            return unserialize(file_get_contents($file));
-        } else {
-            return null;
-        }
+        return unserialize(file_get_contents($file));
     }
 
     /**
@@ -134,12 +119,9 @@ class CacheWrapperFile extends CacheWrapperAbstract
         //~ Clear expired Cache files
         $this->clearExpired();
 
-        $pKey = $this->prefix().$key;
-        if (isset($this->cache[$pKey])) {
-            return true;
-        } else {
-            return false;
-        }
+        $key = $this->prefix() . $key;
+
+        return isset($this->cache[$key]);
     }
 
     /**
@@ -155,26 +137,26 @@ class CacheWrapperFile extends CacheWrapperAbstract
             return false;
         }
 
-        $file = $this->directory.substr(md5($key), 0, 10).'.dat';
-        if (file_exists($file)) {
-            unlink($file);
-            unset($this->cache[$key]);
-            $this->save();
-
-            return true;
-        } else {
+        $file = $this->directory . substr(md5($key), 0, 10) . '.dat';
+        if (!file_exists($file)) {
             return false;
         }
+
+        unlink($file);
+        unset($this->cache[$key]);
+        $this->save();
+
+        return true;
     }
 
     /**
-     * Save caches informations.
+     * Save cache information.
      *
      * @return void
      */
     protected function save()
     {
-        $file = $this->directory.'Cache.dat';
+        $file = $this->directory . 'Cache.dat';
         file_put_contents($file, serialize($this->cache));
     }
 
@@ -196,9 +178,9 @@ class CacheWrapperFile extends CacheWrapperAbstract
         //~ Clear expired Cache files
         $this->clearExpired();
 
-        $pKey = $this->prefix().$key;
-        $file = $this->directory.substr(md5($pKey), 0, 10).'.dat';
-        if ((bool)file_put_contents($file, serialize($value))) {
+        $pKey = $this->prefix() . $key;
+        $file = $this->directory . substr(md5($pKey), 0, 10) . '.dat';
+        if ((bool) file_put_contents($file, serialize($value))) {
             $this->cache[$pKey] = time() + $lifeTime;
             $this->save();
 
@@ -225,7 +207,7 @@ class CacheWrapperFile extends CacheWrapperAbstract
                 $status = mkdir($directory, 0755, true);
             }
 
-            $this->directory = $directory.'/';
+            $this->directory = $directory . '/';
         } else {
             $this->directory = '/tmp/';
         }

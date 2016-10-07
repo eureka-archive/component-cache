@@ -10,14 +10,12 @@
 namespace Eureka\Component\Cache;
 
 /**
- * Class Cache Wrapper for Eaccelerator cache
+ * Class Cache Wrapper for APC cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
-class CacheWrapperEaccelerator extends CacheWrapperAbstract
+class CacheWrapperApc extends CacheWrapperAbstract
 {
-
     /**
      * Clear Cache.
      *
@@ -25,23 +23,7 @@ class CacheWrapperEaccelerator extends CacheWrapperAbstract
      */
     public function clear()
     {
-        $infos = eaccelerator_list_keys();
-        if (is_array($infos)) {
-            foreach ($infos as $info) {
-                // eaccelerator bug (Http://eaccelerator.net/ticket/287)
-                if (0 === strpos($info['name'], ':')) {
-                    $key = substr($info['name'], 1);
-                } else {
-                    $key = $info['name'];
-                }
-
-                if (! eaccelerator_rm($key)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return apc_clear_cache('user');
     }
 
     /**
@@ -52,11 +34,13 @@ class CacheWrapperEaccelerator extends CacheWrapperAbstract
      */
     public function get($key)
     {
-        if (! $this->enabled()) {
+        if (!$this->isEnabled()) {
             return null;
         }
 
-        return unserialize(eaccelerator_get($this->prefix() . $key));
+        $value = apc_fetch($this->prefix() . $key);
+
+        return false === $value ? null : unserialize($value);
     }
 
     /**
@@ -67,11 +51,11 @@ class CacheWrapperEaccelerator extends CacheWrapperAbstract
      */
     public function has($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return (null !== eaccelerator_get($this->prefix() . $key));
+        return (false !== apc_fetch($this->prefix() . $key));
     }
 
     /**
@@ -82,15 +66,7 @@ class CacheWrapperEaccelerator extends CacheWrapperAbstract
      */
     public function remove($key)
     {
-        if (! $this->isEnabled()) {
-            return false;
-        }
-
-        if ($this->has($key)) {
-            eaccelerator_rm($this->prefix() . $key);
-
-            return true;
-        } else {
+        if (!$this->isEnabled()) {
             return false;
         }
 
@@ -100,17 +76,17 @@ class CacheWrapperEaccelerator extends CacheWrapperAbstract
     /**
      * Set a value in the Cache for the specified key.
      *
-     * @param string $key The key name
-     * @param mixed $value The content to put in Cache
+     * @param string  $key The key name
+     * @param mixed   $value The content to put in Cache
      * @param integer $lifeTime Time to keep the content in Cache in seconds
      * @return boolean
      */
     public function set($key, $value, $lifeTime = 3600)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return eaccelerator_put($this->prefix() . $key, serialize($value), $lifeTime);
+        return apc_store($this->prefix() . $key, serialize($value), $lifeTime);
     }
 }

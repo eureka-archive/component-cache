@@ -10,14 +10,12 @@
 namespace Eureka\Component\Cache;
 
 /**
- * Class Cache Wrapper for APC cache
+ * Class Cache Wrapper for Memcache cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
-class CacheWrapperApc extends CacheWrapperAbstract
+class CacheWrapperXCache extends CacheWrapperAbstract
 {
-
     /**
      * Clear Cache.
      *
@@ -25,7 +23,14 @@ class CacheWrapperApc extends CacheWrapperAbstract
      */
     public function clear()
     {
-        return apc_clear_cache('user');
+        $max = xcache_count(XC_TYPE_VAR);
+        for ($index = 0; $index < $max; $index++) {
+            if (!xcache_clear_cache(XC_TYPE_VAR, $index)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -36,13 +41,15 @@ class CacheWrapperApc extends CacheWrapperAbstract
      */
     public function get($key)
     {
-        if (! $this->enabled()) {
+        if (!$this->isEnabled()) {
             return null;
         }
 
-        $value = apc_fetch($this->prefix() . $key);
-
-        return false === $value ? null : unserialize($value);
+        if (xcache_isset($this->prefix() . $key)) {
+            return unserialize(xcache_get($this->prefix() . $key));
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -53,11 +60,11 @@ class CacheWrapperApc extends CacheWrapperAbstract
      */
     public function has($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return (false !== apc_fetch($this->prefix() . $key));
+        return (xcache_isset($this->prefix() . $key));
     }
 
     /**
@@ -68,27 +75,27 @@ class CacheWrapperApc extends CacheWrapperAbstract
      */
     public function remove($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return false;
+        xcache_unset($this->prefix() . $key);
     }
 
     /**
      * Set a value in the Cache for the specified key.
      *
-     * @param string $key The key name
-     * @param mixed $value The content to put in Cache
+     * @param string  $key The key name
+     * @param mixed   $value The content to put in Cache
      * @param integer $lifeTime Time to keep the content in Cache in seconds
      * @return boolean
      */
     public function set($key, $value, $lifeTime = 3600)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return apc_store($this->prefix() . $key, serialize($value), $lifeTime);
+        return xcache_set($this->prefix() . $key, serialize($value), $lifeTime);
     }
 }

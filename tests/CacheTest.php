@@ -9,9 +9,9 @@
 
 namespace Eureka\Component\Cache;
 
-require_once __DIR__.'/../CacheFactory.php';
-require_once __DIR__.'/../CacheWrapperAbstract.php';
-require_once __DIR__.'/../CacheWrapperFile.php';
+require_once __DIR__.'/../src/Cache/CacheFactory.php';
+require_once __DIR__.'/../src/Cache/CacheWrapperAbstract.php';
+require_once __DIR__.'/../src/Cache/CacheWrapperFile.php';
 
 /**
  * Class Test for cache
@@ -38,11 +38,11 @@ class CacheTest extends \PHPUnit_Framework_TestCase
      */
     public function testFactory()
     {
-        $cache = CacheFactory::build();
+        $cache = CacheFactory::build('file');
 
         $this->assertTrue($cache instanceof CacheWrapperFile);
 
-        $cache->setDirectory('/tmp/eureka.cachetest');
+        $cache->setDirectory('eureka.cachetest');
 
         $cache->set('my.key.1', 'My Value 1', 3);
         $cache->set('my.key.2', 2, 3);
@@ -86,6 +86,9 @@ class CacheTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(!$cache->has('my.key.3'));
 
         $this->assertEquals($cache->get('my.key.1'), null);
+
+        unlink('eureka.cachetest/Cache.dat');
+        rmdir('eureka.cachetest');
     }
 
 }

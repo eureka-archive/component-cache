@@ -13,24 +13,20 @@ namespace Eureka\Component\Cache;
  * Class Cache Factory.
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
 class CacheFactory
 {
+    /**
+     * @var CacheWrapperAbstract[] $instances Array of engines already instantiates
+     */
+    protected static $instances = array();
 
     /**
-     * Array of engines already instantiates
-     *
-     * @var array $this
+     * @var string[] $engines Array of engines names
      */
-    protected static $this = array();
-
-    /**
-     * Array of engines names
-     *
-     * @var array $engines
-     */
-    protected static $engines = array('Memcache' => 'memcache_set','Apc' => 'apc_store','XCache' => 'xcache_set','Eaccelerator' => 'Eaccelerator','File' => null);
+    protected static $engines = array(
+        'Memcache' => 'memcache_set', 'Apc' => 'apc_store', 'XCache' => 'xcache_set', 'Eaccelerator' => 'Eaccelerator', 'File' => null,
+    );
 
     /**
      * Get name of php Cache engine used.
@@ -65,12 +61,11 @@ class CacheFactory
             $engine = static::engine();
         }
 
-        if (empty(static::$this[$engine])) {
-            $class = $namespace . '\\' . 'CacheWrapper' . $engine;
-            static::$this[$engine] = new $class();
+        if (empty(static::$instances[$engine])) {
+            $class                 = $namespace . '\\' . 'CacheWrapper' . $engine;
+            static::$instances[$engine] = new $class();
         }
 
-        return static::$this[$engine];
+        return static::$instances[$engine];
     }
-
 }

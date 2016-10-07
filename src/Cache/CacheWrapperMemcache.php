@@ -13,34 +13,29 @@ namespace Eureka\Component\Cache;
  * Class Cache Wrapper for Memcache cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
 class CacheWrapperMemcache extends CacheWrapperAbstract
 {
-
     /**
-     * Current server instance
-     *
-     * @var \Memcache $server
+     * @var \Memcache $server Current server instance
      */
     protected $server = null;
 
     /**
-     * List of servers
-     *
-     * @var array $servers
+     * @var \Memcache[] $servers List of servers
      */
     protected $servers = array();
 
     /**
      * Connect and use specified server.
      *
-     * @param string $host
-     * @param string $port
+     * @param  string $host
+     * @param  int $port
+     * @return bool
      */
     public function connect($host = '127.0.0.1', $port = 11211)
     {
-        if (! isset($this->servers[$host . ':' . $port])) {
+        if (!isset($this->servers[$host . ':' . $port])) {
             $this->server = new \Memcache();
             $this->server->connect($host, $port);
 
@@ -48,6 +43,8 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
         } else {
             $this->server = $this->servers[$host . ':' . $port];
         }
+
+        return true;
     }
 
     /**
@@ -68,7 +65,7 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
      */
     public function get($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return null;
         }
 
@@ -85,7 +82,7 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
      */
     public function has($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
@@ -100,7 +97,7 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
      */
     public function remove($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
@@ -115,7 +112,7 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
      */
     public function delete($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
@@ -125,14 +122,14 @@ class CacheWrapperMemcache extends CacheWrapperAbstract
     /**
      * Set a value in the Cache for the specified key.
      *
-     * @param string $key The key name
-     * @param mixed $value The content to put in Cache
+     * @param string  $key The key name
+     * @param mixed   $value The content to put in Cache
      * @param integer $lifeTime Time to keep the content in Cache in seconds
      * @return boolean
      */
     public function set($key, $value, $lifeTime = 3600)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 

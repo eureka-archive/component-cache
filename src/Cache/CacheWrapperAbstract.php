@@ -13,57 +13,43 @@ namespace Eureka\Component\Cache;
  * Abstract class Cache Wrapper
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
 abstract class CacheWrapperAbstract
 {
-
     /**
-     * If Cache is enabled.
-     *
-     * @var boolean $enabled
+     * @var boolean $enabled If Cache is enabled.
      */
     protected $enabled = true;
 
     /**
-     * Base prefix (Application Cache prefix).
-     *
-     * @var string $prefix
+     * @var string $prefix Base prefix (Application Cache prefix).
      */
     protected $prefix = 'ke5e4f5fsj';
 
     /**
-     * One second in seconds.
-     *
-     * @var integer TIME_SECOND
+     * @var integer TIME_SECOND One second in seconds.
      */
     const TIME_SECOND = 1;
 
     /**
-     * One minute in seconds.
-     *
-     * @var integer TIME_HOUR
+     * @var integer TIME_HOUR One minute in seconds.
      */
     const TIME_MINUTE = 60;
 
     /**
-     * One hour in seconds.
-     *
-     * @var integer TIME_HOUR
+     * @var integer TIME_HOUR One hour in seconds.
      */
     const TIME_HOUR = 3600;
 
     /**
-     * One day in seconds.
-     *
-     * @var integer TIME_DAY
+     * @var integer TIME_DAY One day in seconds.
      */
     const TIME_DAY = 86400;
 
     /**
      * Class constructor
      *
-     * @param $prefix Prefix for cache name.
+     * @param string $prefix Prefix for cache name.
      */
     public function __construct($prefix = null)
     {
@@ -90,6 +76,8 @@ abstract class CacheWrapperAbstract
     /**
      * Connection to the cache server
      *
+     * @param  string $host
+     * @param  int    $port
      * @return boolean
      */
     public function connect($host = '', $port = 0)
@@ -114,7 +102,7 @@ abstract class CacheWrapperAbstract
      *
      * @return CacheWrapperAbstract
      */
-    public function enable($enabled = true)
+    public function enable()
     {
         $this->enabled = true;
 
@@ -173,8 +161,8 @@ abstract class CacheWrapperAbstract
     /**
      * Sets a value in the Cache for the specified key.
      *
-     * @param string $key The key name
-     * @param mixed $value The content to put in Cache
+     * @param string  $key The key name
+     * @param mixed   $value The content to put in Cache
      * @param integer $lifeTime Time to keep the content in Cache in seconds
      * @return boolean
      */

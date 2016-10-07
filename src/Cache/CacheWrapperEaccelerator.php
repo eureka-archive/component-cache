@@ -10,14 +10,12 @@
 namespace Eureka\Component\Cache;
 
 /**
- * Class Cache Wrapper for Memcache cache
+ * Class Cache Wrapper for Eaccelerator cache
  *
  * @author Romain Cottard
- * @version 2.1.0
  */
-class CacheWrapperXCache extends CacheWrapperAbstract
+class CacheWrapperEaccelerator extends CacheWrapperAbstract
 {
-
     /**
      * Clear Cache.
      *
@@ -25,10 +23,19 @@ class CacheWrapperXCache extends CacheWrapperAbstract
      */
     public function clear()
     {
-        $max = xcache_count(XC_TYPE_VAR);
-        for ($index = 0; $index < $max; $index ++) {
-            if (! xcache_clear_cache(XC_TYPE_VAR, $index)) {
-                return false;
+        $keys = eaccelerator_list_keys();
+        if (is_array($keys)) {
+            foreach ($keys as $info) {
+                // eaccelerator bug (Http://eaccelerator.net/ticket/287)
+                if (0 === strpos($info['name'], ':')) {
+                    $key = substr($info['name'], 1);
+                } else {
+                    $key = $info['name'];
+                }
+
+                if (!eaccelerator_rm($key)) {
+                    return false;
+                }
             }
         }
 
@@ -43,15 +50,11 @@ class CacheWrapperXCache extends CacheWrapperAbstract
      */
     public function get($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return null;
         }
 
-        if (xcache_isset($this->prefix() . $key)) {
-            return unserialize(xcache_get($this->prefix() . $key));
-        } else {
-            return null;
-        }
+        return unserialize(eaccelerator_get($this->prefix() . $key));
     }
 
     /**
@@ -62,11 +65,11 @@ class CacheWrapperXCache extends CacheWrapperAbstract
      */
     public function has($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return (xcache_isset($this->prefix() . $key));
+        return (null !== eaccelerator_get($this->prefix() . $key));
     }
 
     /**
@@ -77,27 +80,29 @@ class CacheWrapperXCache extends CacheWrapperAbstract
      */
     public function remove($key)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled() || !$this->has($key)) {
             return false;
         }
 
-        xcache_unset($this->prefix() . $key);
+        eaccelerator_rm($this->prefix() . $key);
+
+        return true;
     }
 
     /**
      * Set a value in the Cache for the specified key.
      *
-     * @param string $key The key name
-     * @param mixed $value The content to put in Cache
+     * @param string  $key The key name
+     * @param mixed   $value The content to put in Cache
      * @param integer $lifeTime Time to keep the content in Cache in seconds
      * @return boolean
      */
     public function set($key, $value, $lifeTime = 3600)
     {
-        if (! $this->isEnabled()) {
+        if (!$this->isEnabled()) {
             return false;
         }
 
-        return xcache_set($this->prefix() . $key, serialize($value), $lifeTime);
+        return eaccelerator_put($this->prefix() . $key, serialize($value), $lifeTime);
     }
 }
