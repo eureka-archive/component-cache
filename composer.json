@@ -14,7 +14,7 @@
 
   "autoload": {
     "psr-4": {
-      "Eureka\\Component\\Cache\\": "./src/Cache"
+      "Eureka\\Component\\Cache\\": "./src/Cache/"
     }
   }
 
